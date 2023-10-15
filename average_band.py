@@ -68,34 +68,39 @@ from os.path import isfile, join
 from PyQt5.QtCore import QFileInfo
 
 total_number_band = 5
-mypath='/Volumes/Liting_HD/output-maxent/output/historical_predict_Dim.tif'
-raw_tif_path = '/Volumes/Liting_HD/output-maxent/output/'
+keywords = '_predict_'
+raw_tif_path = '/Volumes/Liting_HD/output-maxent/output/' # the directory to read and store the files
+input_files= [f for f in os.listdir(raw_tif_path) if (keywords in f) and (f[0]!='.')] # select all the files
+input_files = ['ssp126_predict_Dim.tif', 'ssp126_predict_Ger.tif', 'ssp126_predict_Ind.tif', 'ssp126_predict_Lon.tif', 'ssp126_predict_Maz.tif', 'ssp126_predict_Mex.tif', 'ssp245_predict_Dim.tif', 'ssp245_predict_Ger.tif', 'ssp245_predict_Ind.tif', 'ssp245_predict_Maz.tif', 'ssp370_predict_Dim.tif', 'ssp370_predict_Ger.tif', 'ssp370_predict_Ind.tif', 'ssp370_predict_Maz.tif', 'ssp370_predict_Mex.tif', 'ssp585_predict_Dim.tif', 'ssp585_predict_Ger.tif', 'ssp585_predict_Ind.tif', 'ssp585_predict_Maz.tif', 'ssp585_predict_Mex.tif', 'historical_predict_Ger.tif', 'historical_predict_Ind.tif', 'historical_predict_Lon.tif', 'historical_predict_Maz.tif', 'historical_predict_Mex.tif', 'historical_predict_Pro.tif', 'historical_predict_San.tif', 'ssp126_predict_Pro.tif', 'ssp126_predict_San.tif', 'ssp245_predict_Lon.tif', 'ssp245_predict_Pro.tif', 'ssp245_predict_San.tif', 'ssp585_predict_Lon.tif', 'ssp585_predict_Pro.tif', 'ssp370_predict_Lon.tif', 'ssp370_predict_Pro.tif', 'ssp126_predict_Rec.tif', 'ssp245_predict_Rec.tif', 'historical_predict_Rec.tif', 'historical_predict_Rub.tif', 'ssp126_predict_Rub.tif', 'ssp245_predict_Rub.tif', 'ssp370_predict_Rec.tif', 'ssp370_predict_Rub.tif', 'ssp370_predict_San.tif', 'ssp585_predict_Rec.tif', 'ssp585_predict_Rub.tif', 'ssp585_predict_San.tif']
+print(input_files)
+
 """
 load 
 """
-input_files = ['historical_predict_Dim']
-for this_file in input_files:
 
-    output_raster_path = raw_tif_path + this_file+'full.tif'
+for this_file in input_files:
+    mypath = raw_tif_path + this_file # full path to the raster to be processed
+    output_raster_path = raw_tif_path + this_file[:-4]+'full.tif' #output name
     feedback = QgsProcessingFeedback()
     Processing.initialize()
-    fileInfo = QFileInfo(mypath)
+
+    fileInfo = QFileInfo(mypath) #information of the raster
     this_rpath = fileInfo.filePath()
     baseName = fileInfo.baseName()
 
     this_raster = QgsRasterLayer(this_rpath,baseName)
 
-    entries = []
+    entries = [] # need to store the information of each band (of each raster)
 
     for band_num in range(total_number_band):
         ras = QgsRasterCalculatorEntry()
         ras.ref = this_file+'@'+str(band_num+1)
         ras.raster = this_raster
-        ras.bandNumber = band_num+5
+        ras.bandNumber = total_number_band
         entries.append(ras)
     
     print(entries)
-    # calculate the five band average
+    # calculate the five band average, 'that_item' is my formula
     that_item = '('+this_file+'@1+'+this_file+'@2+'+this_file+'@3+'+this_file+'@4+'+this_file+'@5)/5'
     print(that_item)
     calc = QgsRasterCalculator(that_item, output_raster_path, 'GTiff', this_raster.extent(), int(this_raster.width()), int(this_raster.height()), entries)
